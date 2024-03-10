@@ -18,6 +18,10 @@ UPDATE sequences
 WHERE id = $1
 RETURNING *;
 
+-- name: DeleteSequence :exec
+DELETE FROM sequences
+WHERE id = $1;
+
 -- name: CreateSequenceStep :one
 INSERT INTO sequence_steps (
   sequence_id,
@@ -30,7 +34,7 @@ INSERT INTO sequence_steps (
 
 -- name: GetSequenceSteps :many
 SELECT * FROM sequence_steps
-WHERE sequence_id = $1 LIMIT 1;
+WHERE sequence_id = $1;
 
 -- name: UpdateSequenceStepDetails :one
 UPDATE sequence_steps
@@ -44,3 +48,7 @@ UPDATE sequence_steps
   set step_index = $2
 WHERE id = $1
 RETURNING *;
+
+-- name: DeleteSequenceStep :exec
+DELETE FROM sequence_steps
+WHERE id = $1;

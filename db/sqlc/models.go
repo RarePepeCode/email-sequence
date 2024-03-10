@@ -9,15 +9,15 @@ import (
 )
 
 type Sequence struct {
-	ID             int32
+	ID             int64
 	Name           pgtype.Text
 	OpenTracking   pgtype.Bool
 	ClickTrancking pgtype.Bool
 }
 
 type SequenceStep struct {
-	ID         int32
-	SequenceID int32
+	ID         int64
+	SequenceID int64
 	Subject    pgtype.Text
 	Content    pgtype.Text
 	StepIndex  int32

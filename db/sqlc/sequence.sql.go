@@ -51,7 +51,7 @@ INSERT INTO sequence_steps (
 `
 
 type CreateSequenceStepParams struct {
-	SequenceID int32
+	SequenceID int64
 	Subject    pgtype.Text
 	Content    pgtype.Text
 	StepIndex  int32
@@ -75,12 +75,32 @@ func (q *Queries) CreateSequenceStep(ctx context.Context, arg CreateSequenceStep
 	return i, err
 }
 
+const deleteSequence = `-- name: DeleteSequence :exec
+DELETE FROM sequences
+WHERE id = $1
+`
+
+func (q *Queries) DeleteSequence(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteSequence, id)
+	return err
+}
+
+const deleteSequenceStep = `-- name: DeleteSequenceStep :exec
+DELETE FROM sequence_steps
+WHERE id = $1
+`
+
+func (q *Queries) DeleteSequenceStep(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteSequenceStep, id)
+	return err
+}
+
 const getSequence = `-- name: GetSequence :one
 SELECT id, name, open_tracking, click_trancking FROM sequences
 WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetSequence(ctx context.Context, id int32) (Sequence, error) {
+func (q *Queries) GetSequence(ctx context.Context, id int64) (Sequence, error) {
 	row := q.db.QueryRow(ctx, getSequence, id)
 	var i Sequence
 	err := row.Scan(
@@ -94,10 +114,10 @@ func (q *Queries) GetSequence(ctx context.Context, id int32) (Sequence, error) {
 
 const getSequenceSteps = `-- name: GetSequenceSteps :many
 SELECT id, sequence_id, subject, content, step_index FROM sequence_steps
-WHERE sequence_id = $1 LIMIT 1
+WHERE sequence_id = $1
 `
 
-func (q *Queries) GetSequenceSteps(ctx context.Context, sequenceID int32) ([]SequenceStep, error) {
+func (q *Queries) GetSequenceSteps(ctx context.Context, sequenceID int64) ([]SequenceStep, error) {
 	rows, err := q.db.Query(ctx, getSequenceSteps, sequenceID)
 	if err != nil {
 		return nil, err
@@ -132,7 +152,7 @@ RETURNING id, sequence_id, subject, content, step_index
 `
 
 type UpdateSequenceStepDetailsParams struct {
-	ID      int32
+	ID      int64
 	Subject pgtype.Text
 	Content pgtype.Text
 }
@@ -158,7 +178,7 @@ RETURNING id, sequence_id, subject, content, step_index
 `
 
 type UpdateSequenceStepIndexParams struct {
-	ID        int32
+	ID        int64
 	StepIndex int32
 }
 
@@ -184,7 +204,7 @@ RETURNING id, name, open_tracking, click_trancking
 `
 
 type UpdateSequenceTrackingParams struct {
-	ID             int32
+	ID             int64
 	OpenTracking   pgtype.Bool
 	ClickTrancking pgtype.Bool
 }
