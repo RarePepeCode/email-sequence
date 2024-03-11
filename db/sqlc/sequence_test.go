@@ -9,29 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// func createRandomAccount(t *testing.T) Account {
-// 	user := createRandomUser(t)
-
-// 	arg := CreateAccountParams{
-// 		Owner:    user.Username,
-// 		Balance:  util.RandomMoney(),
-// 		Currency: util.RandomCurrency(),
-// 	}
-
-// 	account, err := testStore.CreateAccount(context.Background(), arg)
-// 	require.NoError(t, err)
-// 	require.NotEmpty(t, account)
-
-// 	require.Equal(t, arg.Owner, account.Owner)
-// 	require.Equal(t, arg.Balance, account.Balance)
-// 	require.Equal(t, arg.Currency, account.Currency)
-
-// 	require.NotZero(t, account.ID)
-// 	require.NotZero(t, account.CreatedAt)
-
-// 	return account
-// }
-
 func TestCreateAccount(t *testing.T) {
 	seq := createTestSequence(t)
 	queries.DeleteSequence(context.Background(), seq.ID)
@@ -111,20 +88,28 @@ func TestUpdateSequenceStepDetails(t *testing.T) {
 	require.Equal(t, params.Content, updatedStep.Content)
 }
 
-func TestUpdateSequenceStepIndex(t *testing.T) {
+func TestGetSequenceStep(t *testing.T) {
 	seq := createTestSequence(t)
 	seqStep := createTestSequenceStep(t, int(seq.ID))
 	defer queries.DeleteSequence(context.Background(), seq.ID)
 	defer queries.DeleteSequenceStep(context.Background(), seqStep.ID)
 
-	params := UpdateSequenceStepIndexParams{
-		ID:        seqStep.ID,
-		StepIndex: seqStep.StepIndex + 1,
-	}
-
-	updatedStep, err := queries.UpdateSequenceStepIndex(context.Background(), params)
+	fetchSeqStep, err := queries.GetSequenceStep(context.Background(), seqStep.ID)
 	require.NoError(t, err)
-	require.Equal(t, seqStep.StepIndex+1, updatedStep.StepIndex)
+	require.NotEmpty(t, fetchSeqStep)
+	require.Equal(t, seqStep.ID, fetchSeqStep.ID)
+}
+
+func TestDeleteSequenceStep(t *testing.T) {
+	seq := createTestSequence(t)
+	seqStep := createTestSequenceStep(t, int(seq.ID))
+	defer queries.DeleteSequence(context.Background(), seq.ID)
+
+	queries.DeleteSequenceStep(context.Background(), seqStep.ID)
+
+	fetchSeqStep, err := queries.GetSequenceStep(context.Background(), seq.ID)
+	require.Error(t, err)
+	require.Empty(t, fetchSeqStep)
 }
 
 func createTestSequence(t *testing.T) Sequence {

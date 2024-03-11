@@ -112,6 +112,24 @@ func (q *Queries) GetSequence(ctx context.Context, id int64) (Sequence, error) {
 	return i, err
 }
 
+const getSequenceStep = `-- name: GetSequenceStep :one
+SELECT id, sequence_id, subject, content, step_index FROM sequence_steps
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetSequenceStep(ctx context.Context, id int64) (SequenceStep, error) {
+	row := q.db.QueryRow(ctx, getSequenceStep, id)
+	var i SequenceStep
+	err := row.Scan(
+		&i.ID,
+		&i.SequenceID,
+		&i.Subject,
+		&i.Content,
+		&i.StepIndex,
+	)
+	return i, err
+}
+
 const getSequenceSteps = `-- name: GetSequenceSteps :many
 SELECT id, sequence_id, subject, content, step_index FROM sequence_steps
 WHERE sequence_id = $1
@@ -159,31 +177,6 @@ type UpdateSequenceStepDetailsParams struct {
 
 func (q *Queries) UpdateSequenceStepDetails(ctx context.Context, arg UpdateSequenceStepDetailsParams) (SequenceStep, error) {
 	row := q.db.QueryRow(ctx, updateSequenceStepDetails, arg.ID, arg.Subject, arg.Content)
-	var i SequenceStep
-	err := row.Scan(
-		&i.ID,
-		&i.SequenceID,
-		&i.Subject,
-		&i.Content,
-		&i.StepIndex,
-	)
-	return i, err
-}
-
-const updateSequenceStepIndex = `-- name: UpdateSequenceStepIndex :one
-UPDATE sequence_steps
-  set step_index = $2
-WHERE id = $1
-RETURNING id, sequence_id, subject, content, step_index
-`
-
-type UpdateSequenceStepIndexParams struct {
-	ID        int64
-	StepIndex int32
-}
-
-func (q *Queries) UpdateSequenceStepIndex(ctx context.Context, arg UpdateSequenceStepIndexParams) (SequenceStep, error) {
-	row := q.db.QueryRow(ctx, updateSequenceStepIndex, arg.ID, arg.StepIndex)
 	var i SequenceStep
 	err := row.Scan(
 		&i.ID,

@@ -1,4 +1,3 @@
-
 CREATE TABLE "sequences" (
   "id" bigserial PRIMARY KEY,
   "name" varchar,
@@ -15,3 +14,5 @@ CREATE TABLE "sequence_steps" (
 );
 
 ALTER TABLE "sequence_steps" ADD FOREIGN KEY ("sequence_id") REFERENCES "sequences" ("id");
+
+ALTER TABLE "sequence_steps" ADD UNIQUE ("sequence_id", "step_index")
