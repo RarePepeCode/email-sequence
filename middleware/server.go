@@ -35,8 +35,8 @@ func (server Server) initRouter() *http.Server {
 
 	router.POST("/sequence", server.CreateSequence)
 	router.PATCH("sequence/:id", server.UpdateSequenceTracking)
-	router.POST("/sequence-step", server.CreateSequenceStep)
 
+	router.POST("/sequence-step", server.CreateSequenceStep)
 	router.PATCH("sequence-step/:id", server.UpdateSequenceStepDetails)
 	router.DELETE("sequence-step/:id", server.DeleteSequenceStep)
 

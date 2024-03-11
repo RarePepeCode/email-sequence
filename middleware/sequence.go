@@ -51,17 +51,17 @@ type reqeustPathId struct {
 }
 
 func (server Server) CreateSequence(ctx *gin.Context) {
-	var req createSequenceRequest
-	err := ctx.BindJSON(&req)
+	var body createSequenceRequest
+	err := ctx.BindJSON(&body)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
 	params := db.CreateSequenceParams{
-		Name:           pgtype.Text{String: req.Name, Valid: true},
-		OpenTracking:   pgtype.Bool{Bool: req.Open_tracking, Valid: true},
-		ClickTrancking: pgtype.Bool{Bool: req.Click_trancking, Valid: true},
+		Name:           pgtype.Text{String: body.Name, Valid: true},
+		OpenTracking:   pgtype.Bool{Bool: body.Open_tracking, Valid: true},
+		ClickTrancking: pgtype.Bool{Bool: body.Click_trancking, Valid: true},
 	}
 	seq, err := server.queries.CreateSequence(ctx, params)
 	if err != nil {
@@ -72,10 +72,10 @@ func (server Server) CreateSequence(ctx *gin.Context) {
 }
 
 func (server Server) UpdateSequenceTracking(ctx *gin.Context) {
-	var reqbody updateSequenceTrackingRequest
+	var body updateSequenceTrackingRequest
 	var pathId reqeustPathId
 
-	err := ctx.BindJSON(&reqbody)
+	err := ctx.BindJSON(&body)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -94,8 +94,8 @@ func (server Server) UpdateSequenceTracking(ctx *gin.Context) {
 
 	params := db.UpdateSequenceTrackingParams{
 		ID:             pathId.ID,
-		OpenTracking:   pgtype.Bool{Bool: reqbody.Open_tracking, Valid: true},
-		ClickTrancking: pgtype.Bool{Bool: reqbody.Click_trancking, Valid: true},
+		OpenTracking:   pgtype.Bool{Bool: body.Open_tracking, Valid: true},
+		ClickTrancking: pgtype.Bool{Bool: body.Click_trancking, Valid: true},
 	}
 	updatedSeq, err := server.queries.UpdateSequenceTracking(ctx, params)
 	if err != nil {
@@ -107,10 +107,10 @@ func (server Server) UpdateSequenceTracking(ctx *gin.Context) {
 }
 
 func (server Server) UpdateSequenceStepDetails(ctx *gin.Context) {
-	var reqbody updateSequenceStepDetailsRequest
+	var body updateSequenceStepDetailsRequest
 	var pathId reqeustPathId
 
-	err := ctx.BindJSON(&reqbody)
+	err := ctx.BindJSON(&body)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -129,8 +129,8 @@ func (server Server) UpdateSequenceStepDetails(ctx *gin.Context) {
 
 	params := db.UpdateSequenceStepDetailsParams{
 		ID:      pathId.ID,
-		Subject: pgtype.Text{String: reqbody.Subject, Valid: true},
-		Content: pgtype.Text{String: reqbody.Content, Valid: true},
+		Subject: pgtype.Text{String: body.Subject, Valid: true},
+		Content: pgtype.Text{String: body.Content, Valid: true},
 	}
 	updatedSeqStep, err := server.queries.UpdateSequenceStepDetails(ctx, params)
 	if err != nil {
@@ -142,24 +142,24 @@ func (server Server) UpdateSequenceStepDetails(ctx *gin.Context) {
 }
 
 func (server Server) CreateSequenceStep(ctx *gin.Context) {
-	var req createSequenceStepRequest
-	err := ctx.BindJSON(&req)
+	var body createSequenceStepRequest
+	err := ctx.BindJSON(&body)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	_, err = server.queries.GetSequence(ctx, int64(req.SeqId))
+	_, err = server.queries.GetSequence(ctx, int64(body.SeqId))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "No sequence exist for passed seq_id"})
 		return
 	}
 
 	params := db.CreateSequenceStepParams{
-		StepIndex:  int32(req.Index),
-		SequenceID: int64(req.SeqId),
-		Content:    pgtype.Text{String: req.Content, Valid: true},
-		Subject:    pgtype.Text{String: req.Subject, Valid: true},
+		StepIndex:  int32(body.Index),
+		SequenceID: int64(body.SeqId),
+		Content:    pgtype.Text{String: body.Content, Valid: true},
+		Subject:    pgtype.Text{String: body.Subject, Valid: true},
 	}
 	seqStep, err := server.queries.CreateSequenceStep(ctx, params)
 	if err != nil {
