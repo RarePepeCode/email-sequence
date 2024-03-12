@@ -50,15 +50,25 @@ func TestDeleteSequence(t *testing.T) {
 
 func TestCreateSequenceStep(t *testing.T) {
 	seq := createTestSequence(t)
-	seqStep := createTestSequenceStep(t, int(seq.ID))
-	queries.DeleteSequence(context.Background(), seq.ID)
-	queries.DeleteSequenceStep(context.Background(), seqStep.ID)
+	seqStep := createTestSequenceStep(t, int(seq.ID), 1)
+	defer queries.DeleteSequence(context.Background(), seq.ID)
+	defer queries.DeleteSequenceStep(context.Background(), seqStep.ID)
+
+	params := CreateSequenceStepParams{
+		SequenceID: int64(seq.ID),
+		Subject:    pgtype.Text{String: "Test Subject", Valid: true},
+		Content:    pgtype.Text{String: "Test Content", Valid: true},
+		StepIndex:  1,
+	}
+	failedConstraintseqStep, err := queries.CreateSequenceStep(context.Background(), params)
+	require.Error(t, err)
+	require.Equal(t, int64(0), failedConstraintseqStep.ID)
 }
 
 func TestGetSequenceSteps(t *testing.T) {
 	seq := createTestSequence(t)
-	seqStep1 := createTestSequenceStep(t, int(seq.ID))
-	seqStep2 := createTestSequenceStep(t, int(seq.ID))
+	seqStep1 := createTestSequenceStep(t, int(seq.ID), 1)
+	seqStep2 := createTestSequenceStep(t, int(seq.ID), 2)
 	defer queries.DeleteSequence(context.Background(), seq.ID)
 	defer queries.DeleteSequenceStep(context.Background(), seqStep1.ID)
 	defer queries.DeleteSequenceStep(context.Background(), seqStep2.ID)
@@ -73,7 +83,7 @@ func TestGetSequenceSteps(t *testing.T) {
 
 func TestUpdateSequenceStepDetails(t *testing.T) {
 	seq := createTestSequence(t)
-	seqStep := createTestSequenceStep(t, int(seq.ID))
+	seqStep := createTestSequenceStep(t, int(seq.ID), 1)
 	defer queries.DeleteSequence(context.Background(), seq.ID)
 	defer queries.DeleteSequenceStep(context.Background(), seqStep.ID)
 	params := UpdateSequenceStepDetailsParams{
@@ -90,7 +100,7 @@ func TestUpdateSequenceStepDetails(t *testing.T) {
 
 func TestGetSequenceStep(t *testing.T) {
 	seq := createTestSequence(t)
-	seqStep := createTestSequenceStep(t, int(seq.ID))
+	seqStep := createTestSequenceStep(t, int(seq.ID), 1)
 	defer queries.DeleteSequence(context.Background(), seq.ID)
 	defer queries.DeleteSequenceStep(context.Background(), seqStep.ID)
 
@@ -102,7 +112,7 @@ func TestGetSequenceStep(t *testing.T) {
 
 func TestDeleteSequenceStep(t *testing.T) {
 	seq := createTestSequence(t)
-	seqStep := createTestSequenceStep(t, int(seq.ID))
+	seqStep := createTestSequenceStep(t, int(seq.ID), 1)
 	defer queries.DeleteSequence(context.Background(), seq.ID)
 
 	queries.DeleteSequenceStep(context.Background(), seqStep.ID)
@@ -125,12 +135,12 @@ func createTestSequence(t *testing.T) Sequence {
 	return seq
 }
 
-func createTestSequenceStep(t *testing.T, seqId int) SequenceStep {
+func createTestSequenceStep(t *testing.T, seqId int, index int) SequenceStep {
 	params := CreateSequenceStepParams{
 		SequenceID: int64(seqId),
 		Subject:    pgtype.Text{String: "Test Subject", Valid: true},
 		Content:    pgtype.Text{String: "Test Content", Valid: true},
-		StepIndex:  1,
+		StepIndex:  int32(index),
 	}
 	seqStep, err := queries.CreateSequenceStep(context.Background(), params)
 	require.NoError(t, err)
