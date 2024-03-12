@@ -27,14 +27,16 @@ INSERT INTO sequence_steps (
   sequence_id,
   subject,
   content,
-  step_index
+  step_index,
+  wait_days
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5
 ) RETURNING *;
 
 -- name: GetSequenceSteps :many
 SELECT * FROM sequence_steps
-WHERE sequence_id = $1;
+WHERE sequence_id = $1
+ORDER BY step_index ASC;
 
 -- name: GetSequenceStep :one
 SELECT * FROM sequence_steps

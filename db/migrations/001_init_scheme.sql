@@ -10,7 +10,8 @@ CREATE TABLE "sequence_steps" (
   "sequence_id" bigint NOT NULL,
   "subject" varchar,
   "content" varchar,
-  "step_index" integer NOT NULL
+  "step_index" integer NOT NULL,
+  "wait_days" integer
 );
 
 ALTER TABLE "sequence_steps" ADD FOREIGN KEY ("sequence_id") REFERENCES "sequences" ("id");

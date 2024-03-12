@@ -16,11 +16,12 @@ type SeqResponse struct {
 }
 
 type SeqStepResponse struct {
-	Id      int    `json:"id"`
-	SeqId   int    `json:"seq_id"`
-	Index   int    `json:"index"`
-	Subject string `json:"subjectd"`
-	Content string `json:"content"`
+	Id       int    `json:"id"`
+	SeqId    int    `json:"seq_id"`
+	Index    int    `json:"index"`
+	Subject  string `json:"subjectd"`
+	Content  string `json:"content"`
+	WaitDays int    `json:"wait_days"`
 }
 
 type createSequenceRequest struct {
@@ -35,15 +36,16 @@ type updateSequenceTrackingRequest struct {
 }
 
 type updateSequenceStepDetailsRequest struct {
-	Subject string `json:"subject" binding:"required,min=1"`
-	Content string `json:"content" binding:"required,min=1"`
+	Subject string `json:"subject" binding:"required"`
+	Content string `json:"content" binding:"required"`
 }
 
 type createSequenceStepRequest struct {
-	SeqId   int    `json:"seq_id" binding:"required,min=1"`
-	Index   int    `json:"index" binding:"required,min=1"`
-	Subject string `json:"subject"`
-	Content string `json:"content"`
+	SeqId    int    `json:"seq_id" binding:"required,min=1"`
+	Index    int    `json:"index" binding:"required,min=1"`
+	Subject  string `json:"subject"`
+	Content  string `json:"content"`
+	WaitDays int    `json:"wait_days"`
 }
 
 type reqeustPathId struct {
@@ -160,6 +162,7 @@ func (server Server) CreateSequenceStep(ctx *gin.Context) {
 		SequenceID: int64(body.SeqId),
 		Content:    pgtype.Text{String: body.Content, Valid: true},
 		Subject:    pgtype.Text{String: body.Subject, Valid: true},
+		WaitDays:   pgtype.Int4{Int32: int32(body.WaitDays), Valid: true},
 	}
 	seqStep, err := server.queries.CreateSequenceStep(ctx, params)
 	if err != nil {
@@ -196,10 +199,11 @@ func createSequenceResponse(seq *db.Sequence) *SeqResponse {
 
 func createSequenceStepResponse(seqStep *db.SequenceStep) *SeqStepResponse {
 	return &SeqStepResponse{
-		Id:      int(seqStep.ID),
-		SeqId:   int(seqStep.SequenceID),
-		Index:   int(seqStep.StepIndex),
-		Subject: seqStep.Subject.String,
-		Content: seqStep.Content.String,
+		Id:       int(seqStep.ID),
+		SeqId:    int(seqStep.SequenceID),
+		Index:    int(seqStep.StepIndex),
+		Subject:  seqStep.Subject.String,
+		Content:  seqStep.Content.String,
+		WaitDays: int(seqStep.WaitDays.Int32),
 	}
 }

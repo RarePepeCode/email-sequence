@@ -44,10 +44,11 @@ INSERT INTO sequence_steps (
   sequence_id,
   subject,
   content,
-  step_index
+  step_index,
+  wait_days
 ) VALUES (
-  $1, $2, $3, $4
-) RETURNING id, sequence_id, subject, content, step_index
+  $1, $2, $3, $4, $5
+) RETURNING id, sequence_id, subject, content, step_index, wait_days
 `
 
 type CreateSequenceStepParams struct {
@@ -55,6 +56,7 @@ type CreateSequenceStepParams struct {
 	Subject    pgtype.Text
 	Content    pgtype.Text
 	StepIndex  int32
+	WaitDays   pgtype.Int4
 }
 
 func (q *Queries) CreateSequenceStep(ctx context.Context, arg CreateSequenceStepParams) (SequenceStep, error) {
@@ -63,6 +65,7 @@ func (q *Queries) CreateSequenceStep(ctx context.Context, arg CreateSequenceStep
 		arg.Subject,
 		arg.Content,
 		arg.StepIndex,
+		arg.WaitDays,
 	)
 	var i SequenceStep
 	err := row.Scan(
@@ -71,6 +74,7 @@ func (q *Queries) CreateSequenceStep(ctx context.Context, arg CreateSequenceStep
 		&i.Subject,
 		&i.Content,
 		&i.StepIndex,
+		&i.WaitDays,
 	)
 	return i, err
 }
@@ -113,7 +117,7 @@ func (q *Queries) GetSequence(ctx context.Context, id int64) (Sequence, error) {
 }
 
 const getSequenceStep = `-- name: GetSequenceStep :one
-SELECT id, sequence_id, subject, content, step_index FROM sequence_steps
+SELECT id, sequence_id, subject, content, step_index, wait_days FROM sequence_steps
 WHERE id = $1 LIMIT 1
 `
 
@@ -126,13 +130,15 @@ func (q *Queries) GetSequenceStep(ctx context.Context, id int64) (SequenceStep, 
 		&i.Subject,
 		&i.Content,
 		&i.StepIndex,
+		&i.WaitDays,
 	)
 	return i, err
 }
 
 const getSequenceSteps = `-- name: GetSequenceSteps :many
-SELECT id, sequence_id, subject, content, step_index FROM sequence_steps
+SELECT id, sequence_id, subject, content, step_index, wait_days FROM sequence_steps
 WHERE sequence_id = $1
+ORDER BY step_index ASC
 `
 
 func (q *Queries) GetSequenceSteps(ctx context.Context, sequenceID int64) ([]SequenceStep, error) {
@@ -150,6 +156,7 @@ func (q *Queries) GetSequenceSteps(ctx context.Context, sequenceID int64) ([]Seq
 			&i.Subject,
 			&i.Content,
 			&i.StepIndex,
+			&i.WaitDays,
 		); err != nil {
 			return nil, err
 		}
@@ -166,7 +173,7 @@ UPDATE sequence_steps
   set subject = $2,
   content = $3
 WHERE id = $1
-RETURNING id, sequence_id, subject, content, step_index
+RETURNING id, sequence_id, subject, content, step_index, wait_days
 `
 
 type UpdateSequenceStepDetailsParams struct {
@@ -184,6 +191,7 @@ func (q *Queries) UpdateSequenceStepDetails(ctx context.Context, arg UpdateSeque
 		&i.Subject,
 		&i.Content,
 		&i.StepIndex,
+		&i.WaitDays,
 	)
 	return i, err
 }

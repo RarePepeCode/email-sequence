@@ -67,8 +67,8 @@ func TestCreateSequenceStep(t *testing.T) {
 
 func TestGetSequenceSteps(t *testing.T) {
 	seq := createTestSequence(t)
-	seqStep1 := createTestSequenceStep(t, int(seq.ID), 1)
-	seqStep2 := createTestSequenceStep(t, int(seq.ID), 2)
+	seqStep1 := createTestSequenceStep(t, int(seq.ID), 2)
+	seqStep2 := createTestSequenceStep(t, int(seq.ID), 1)
 	defer queries.DeleteSequence(context.Background(), seq.ID)
 	defer queries.DeleteSequenceStep(context.Background(), seqStep1.ID)
 	defer queries.DeleteSequenceStep(context.Background(), seqStep2.ID)
@@ -79,6 +79,7 @@ func TestGetSequenceSteps(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, 2, len(seqSteps))
+	require.Equal(t, 1, int(seqSteps[0].StepIndex))
 }
 
 func TestUpdateSequenceStepDetails(t *testing.T) {

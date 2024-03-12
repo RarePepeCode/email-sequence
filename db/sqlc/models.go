@@ -21,4 +21,5 @@ type SequenceStep struct {
 	Subject    pgtype.Text
 	Content    pgtype.Text
 	StepIndex  int32
+	WaitDays   pgtype.Int4
 }
